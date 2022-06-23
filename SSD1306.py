@@ -134,6 +134,14 @@ FONT_STANDARD={
 import i2c
 
 class SSD1306(i2c.I2c):
+    """
+    Class for SSD1306 OLED displays.
+    Creates a new instance of the SSD1306 I2C display.
+    Parameters:
+        drvname (optional): The I2C bus to use. (default: I2C0)
+        addr (optional): The address of the display. (default: 0x3C)
+        clock (optional): The clock rate of the I2C bus. (default: 100000)
+    """
     def __init__(self, addr=0x3c, drvname = I2C0, clock = 1000000):
         """
         Constructor
