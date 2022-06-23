@@ -135,11 +135,18 @@ import i2c
 
 class SSD1306(i2c.I2c):
     def __init__(self, addr=0x3c, drvname = I2C0, clock = 1000000):
+        """
+        Constructor
+        """
         i2c.I2c.__init__(self, addr, drvname, clock)
         self.init()
         self.clear()
 
     def init(self):
+        """
+        Initialize the OLED display.
+        No parameters.
+        """
         init_sequence = [
             SSD1306_DISPLAYOFF,
             SSD1306_SETDISPLAYCLOCKDIV, 0x80,
@@ -163,6 +170,10 @@ class SSD1306(i2c.I2c):
         self._commandStream(init_sequence)
 
     def clear(self):
+        """
+        Clear the display.
+        No parameters.
+        """
         data = bytearray()
         for i in range(0xB0, 0xB8):
             # self._setCursor(5, 0)
@@ -171,6 +182,14 @@ class SSD1306(i2c.I2c):
             self._pixelStream(data)
 
     def printString(self, string, x = 0, y = 0, font = FONT_STANDARD):
+        """
+        Print a string on the display.
+        Parameters:
+            string: string to print
+            x (optional): x coordinate
+            y (optional): y coordinate
+            font (optional): font to use
+        """
         data = bytearray()
         string = string.upper()
 
@@ -181,6 +200,18 @@ class SSD1306(i2c.I2c):
             self._printChar(char, font)
 
     def printBitmap(self, bitmap, x = 0, y = 0, width = None, height = None):
+        """
+        Print a bitmap on the display.
+        Parameters:
+            bitmap: bitmap to print
+            x (optional): x coordinate
+            y (optional): y coordinate
+            width (optional): width of the bitmap
+            height (optional): height of the bitmap
+        """
+        data = bytearray()
+        if width is None:
+            width = len(bitmap[0])
         data = bytearray()
         if width is None:
             width = len(bitmap[0])
@@ -195,6 +226,16 @@ class SSD1306(i2c.I2c):
 ######################### Private methods, do not use or override unless you know what you are doing! #########################
 
     def _createFrame(self, x, y, width, height, border = False):
+        """
+        ***PRIVATE***
+        Create a frame on the display.
+        Parameters:
+            x: x coordinate
+            y: y coordinate
+            width: width of the frame
+            height: height of the frame
+            border (optional): if True, a border is drawn
+        """
         data = bytearray()
         self._commandStream(bytearray([SSD1306_COLUMNADDR, x, x + width - 1]))
         self._commandStream(bytearray([SSD1306_PAGEADDR, y, y + height - 1]))
@@ -208,18 +249,44 @@ class SSD1306(i2c.I2c):
         self._pixelStream(data)
 
     def _printChar(self, char, font):
+        """
+        ***PRIVATE***
+        Print a character on the display.
+        Parameters:
+            char: character to print
+            font: font to use
+        """
         c = font.get(char, None)
         data = bytearray(c)
         self._pixelStream(data)
 
     def _setCursor(self, x, y):
+        """
+        ***PRIVATE***
+        Set the cursor position.
+        Parameters:
+            x: x coordinate
+            y: y coordinate
+        """
         self._commandStream(bytearray([SSD1306_COLUMNADDR, x, 0x7F]))
         self._commandStream(bytearray([SSD1306_PAGEADDR, y, 0x07]))
 
     def _pixelStream(self, data):
+        """
+        ***PRIVATE***
+        Send a stream of pixels to the display.
+        Parameters:
+            data: data to send
+        """
         for d in data:
             self.write(bytearray([0x40, d]))
 
     def _commandStream(self, data):
+        """
+        ***PRIVATE***
+        Send a stream of commands to the display.
+        Parameters:
+            data: data to send
+        """
         for d in data:
             self.write(bytearray([0x00, d]))
