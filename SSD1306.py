@@ -1,7 +1,8 @@
+############    Display informations    #############################
 SSD1306_LCDWIDTH                    = 128
 SSD1306_LCDHEIGHT                   = 64
 
-############Fundamental Commands#############################
+############    Fundamental Commands    #############################
 #set contrast control register
 SSD1306_SETCONTRAST                 = 0x81
 #Turn on the OLED panel resuming from previous display data or not
@@ -14,7 +15,7 @@ SSD1306_INVERTDISPLAY               = 0xA7
 SSD1306_DISPLAYON                   = 0xAF
 SSD1306_DISPLAYOFF                  = 0xAE
 
-#############Scroll Command#############################
+#############   Scroll Command          #############################
 #Set horizontal scrolling
 SSD1306_SETSCROLL_HORIZONTAL_RIGHT  = 0x26
 SSD1306_SETSCROLL_HORIZONTAL_LEFT   = 0x27
@@ -27,7 +28,7 @@ SSD1306_DEACTIVATE_SCROLL           = 0x2F
 #Set vertical scroll area
 SSD1306_SET_VERTICAL_SCROLL_AREA    = 0xA3
 
-#############Addressing Setting Command#############################
+#############   Addressing Setting Commands ########################
 #Set memory addressing mode
 SSD1306_MEMORYMODE                  = 0x20
 #Set column address (only for horizontal or vertical addressing mode)
@@ -35,7 +36,7 @@ SSD1306_COLUMNADDR                  = 0x21
 #Set page address (only for horizontal or vertical addressing mode)
 SSD1306_PAGEADDR                    = 0x22
 
-#############Hardware Configuration Command#############################
+#############   Hardware Configuration Commands ####################
 #Set Segment Remap
 SSD1306_SEGREMAP                    = 0xA0
 SSD1306_SEGREMAP_LAST               = 0xA1
@@ -53,7 +54,7 @@ SSD1306_CHARGEPUMP                  = 0x8D
 #Set stert line to 0, you can set it from 0x40 to 0x7F to set it wherever you want
 SSD1306_SETSTARTLINE_ZERO           = 0x40
 
-#############Timing & Driving Scheme Setting Command#############################
+#############   Timing & Driving Scheme Setting Command ############
 #Set Display Clock Divide Ratio/oscillator frequency
 SSD1306_SETDISPLAYCLOCKDIV          = 0xD5
 #Set Pre-charge Period
@@ -190,6 +191,8 @@ class SSD1306(i2c.I2c):
             for j in range(0, width):
                 data.append(bitmap[i][j])
         self._pixelStream(data)
+
+######################### Private methods, do not use or override unless you know what you are doing! #########################
 
     def _createFrame(self, x, y, width, height, border = False):
         data = bytearray()
