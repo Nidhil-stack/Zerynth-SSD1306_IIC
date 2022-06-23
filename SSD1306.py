@@ -1,35 +1,72 @@
 SSD1306_LCDWIDTH                    = 128
 SSD1306_LCDHEIGHT                   = 64
+
+############Fundamental Commands#############################
+#set contrast control register
 SSD1306_SETCONTRAST                 = 0x81
+#Turn on the OLED panel resuming from previous display data or not
 SSD1306_DISPLAYALLON_RESUME         = 0xA4
 SSD1306_DISPLAYALLON                = 0xA5
+#Set normal/inverse mode
 SSD1306_NORMALDISPLAY               = 0xA6
 SSD1306_INVERTDISPLAY               = 0xA7
-SSD1306_DISPLAYOFF                  = 0xAE
+#Set display ON/OFF(Sleep Mode)
 SSD1306_DISPLAYON                   = 0xAF
-SSD1306_SETDISPLAYOFFSET            = 0xD3
+SSD1306_DISPLAYOFF                  = 0xAE
+
+#############Scroll Command#############################
+#Set horizontal scrolling
+SSD1306_SETSCROLL_HORIZONTAL_RIGHT  = 0x26
+SSD1306_SETSCROLL_HORIZONTAL_LEFT   = 0x27
+#Set vertical and horizontal scrolling
+SSD1306_SETSCROLL_RIGHT             = 0x29
+SSD1306_SETSCROLL_LEFT              = 0x2A
+#Activate/Deactivate scroll
+SSD1306_ACTIVATE_SCROLL             = 0x2E
+SSD1306_DEACTIVATE_SCROLL           = 0x2F
+#Set vertical scroll area
+SSD1306_SET_VERTICAL_SCROLL_AREA    = 0xA3
+
+#############Addressing Setting Command#############################
+#Set memory addressing mode
+SSD1306_MEMORYMODE                  = 0x20
+#Set column address (only for horizontal or vertical addressing mode)
+SSD1306_COLUMNADDR                  = 0x21
+#Set page address (only for horizontal or vertical addressing mode)
+SSD1306_PAGEADDR                    = 0x22
+
+#############Hardware Configuration Command#############################
+#Set Segment Remap
+SSD1306_SEGREMAP                    = 0xA0
+SSD1306_SEGREMAP_LAST               = 0xA1
+#Set multiplex ratio
+SSD1306_SET_MULTIPLEX               = 0xA8
+#Set COM Output Scan Direction
+SSD1306_COMSCANDEC                  = 0xC8
+SSD1306_COMSCANINC                  = 0xC0
+#Set display offset
+SSD1306_SET_DISPLAY_OFFSET          = 0xD3
+#Set COM Pins Hardware Configuration
 SSD1306_SETCOMPINS                  = 0xDA
-SSD1306_SETVCOMDETECT               = 0xDB
+#Charge Pump Setting
+SSD1306_CHARGEPUMP                  = 0x8D
+#Set stert line to 0, you can set it from 0x40 to 0x7F to set it wherever you want
+SSD1306_SETSTARTLINE_ZERO           = 0x40
+
+#############Timing & Driving Scheme Setting Command#############################
+#Set Display Clock Divide Ratio/oscillator frequency
 SSD1306_SETDISPLAYCLOCKDIV          = 0xD5
+#Set Pre-charge Period
 SSD1306_SETPRECHARGE                = 0xD9
-SSD1306_SETMULTIPLEX                = 0xA8
+#Set VCOMH Deselect Level
+SSD1306_SETVCOMDETECT               = 0xDB
+#No Operation
+SSD1306_NOP                         = 0xE3
+
 SSD1306_SETLOWCOLUMN                = 0x00
 SSD1306_SETHIGHCOLUMN               = 0x10
-SSD1306_SETSTARTLINE                = 0x40
-SSD1306_MEMORYMODE                  = 0x20
-SSD1306_COLUMNADDR                  = 0x21
-SSD1306_PAGEADDR                    = 0x22
-SSD1306_COMSCANINC                  = 0xC0
-SSD1306_COMSCANDEC                  = 0xC8
-SSD1306_SEGREMAP                    = 0xA0
-SSD1306_CHARGEPUMP                  = 0x8D
-SSD1306_EXTERNALVCC                 = 0x1
-SSD1306_SWITCHCAPVCC                = 0x2
 
-cont=0
-spaziodisponibile=128
-
-CHARACTERS={
+FONT_STANDARD={
     #-> LETTERS
     'A':[0X7E,0X09,0X09,0X7E,0X00],
     'B':[0X7F,0X49,0X49,0X36,0X00],
@@ -97,7 +134,6 @@ import i2c
 
 class SSD1306(i2c.I2c):
     def __init__(self, addr=0x3c, drvname = I2C0, clock = 1000000):
-        print("SSD1306 init")
         i2c.I2c.__init__(self, addr, drvname, clock)
         self.init()
         self.clear()
@@ -108,9 +144,9 @@ class SSD1306(i2c.I2c):
         init_sequence = [
             SSD1306_DISPLAYOFF,
             SSD1306_SETDISPLAYCLOCKDIV, 0x80,
-            SSD1306_SETMULTIPLEX, 0x3F,
-            SSD1306_SETDISPLAYOFFSET, 0x00,
-            SSD1306_SETSTARTLINE,
+            SSD1306_SET_MULTIPLEX, 0x3F,
+            SSD1306_SET_DISPLAY_OFFSET, 0x00,
+            SSD1306_SETSTARTLINE_ZERO,
             SSD1306_CHARGEPUMP, 0x14,
             SSD1306_MEMORYMODE, 0x00,
             SSD1306_SEGREMAP,
@@ -120,31 +156,40 @@ class SSD1306(i2c.I2c):
             SSD1306_SETPRECHARGE, 0xF1,
             SSD1306_SETVCOMDETECT, 0x40,
             SSD1306_DISPLAYALLON_RESUME,
-            SSD1306_INVERTDISPLAY,
+            SSD1306_NORMALDISPLAY,
             SSD1306_DISPLAYON,
             SSD1306_COLUMNADDR, 0x00, 0x7F,
-            SSD1306_PAGEADDR, 0x00, 0x07
+            SSD1306_PAGEADDR, 0x00, 0x07,
         ]
         self._commandStream(init_sequence)
 
     def clear(self):
         data = bytearray()
-        for i in range(0, 1024):
-            data.append(0x00)
-        self._pixelStream(data)
+        for i in range(0xB0, 0xB8):
+            # self._setCursor(5, 0)
+            for j in range(0, 1024):
+                data.append(0x00)
+            self._pixelStream(data)
 
-    def printString(self, string):
+    def printString(self, string, x = 0, y = 0, font = FONT_STANDARD):
         data = bytearray()
         string = string.upper()
+
+        self._setCursor(x, y)
+
         for char in string:
             print(char)
-            self._printChar(char)
+            self._printChar(char, font)
 
 
-    def _printChar(self, char):
-        c = CHARACTERS.get(char, None)
+    def _printChar(self, char, font):
+        c = font.get(char, None)
         data = bytearray(c)
         self._pixelStream(data)
+
+    def _setCursor(self, x, y):
+        self._commandStream(bytearray([SSD1306_COLUMNADDR, x, 0x7F]))
+        self._commandStream(bytearray([SSD1306_PAGEADDR, y, 0x07]))
 
     def _pixelStream(self, data):
         for d in data:
