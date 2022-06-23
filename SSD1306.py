@@ -138,8 +138,6 @@ class SSD1306(i2c.I2c):
         self.init()
         self.clear()
 
-
-
     def init(self):
         init_sequence = [
             SSD1306_DISPLAYOFF,
@@ -181,6 +179,30 @@ class SSD1306(i2c.I2c):
             print(char)
             self._printChar(char, font)
 
+    def printBitmap(self, bitmap, x = 0, y = 0, width = None, height = None):
+        data = bytearray()
+        if width is None:
+            width = len(bitmap[0])
+        if height is None:
+            height = len(bitmap)
+        self._createFrame(x, y, width, height)
+        for i in range(0, height):
+            for j in range(0, width):
+                data.append(bitmap[i][j])
+        self._pixelStream(data)
+
+    def _createFrame(self, x, y, width, height, border = False):
+        data = bytearray()
+        self._commandStream(bytearray([SSD1306_COLUMNADDR, x, x + width - 1]))
+        self._commandStream(bytearray([SSD1306_PAGEADDR, y, y + height - 1]))
+        if not border: return
+        for i in range(0, height):
+            for j in range(0, width):
+                if i == 0 or i == height - 1 or j == 0 or j == width - 1:
+                    data.append(0xFF)
+                else:
+                    data.append(0x00)
+        self._pixelStream(data)
 
     def _printChar(self, char, font):
         c = font.get(char, None)
