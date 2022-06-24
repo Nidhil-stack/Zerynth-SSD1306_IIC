@@ -142,6 +142,7 @@ class SSD1306(i2c.I2c):
         addr (optional): The address of the display. (default: 0x3C)
         clock (optional): The clock rate of the I2C bus. (default: 100000)
     """
+
     def __init__(self, addr=0x3c, drvname = I2C0, clock = 1000000):
         """
         Constructor
@@ -183,11 +184,24 @@ class SSD1306(i2c.I2c):
         No parameters.
         """
         data = bytearray()
+        self._setCursor(0, 0)
         for i in range(0xB0, 0xB8):
-            # self._setCursor(5, 0)
             for j in range(0, 1024):
                 data.append(0x00)
             self._pixelStream(data)
+
+    def clearBlue(self):
+        """
+        Clears the first 6 rows of the display.
+        No parameters.
+        """
+        for i in range(0xB0, 0xB6):
+            data = bytearray()
+            self._setCursor(0, i)
+            for j in range(0, 128):
+                data.append(0x00)
+            self._pixelStream(data)
+
 
     def printString(self, string, x = 0, y = 0, font = FONT_STANDARD):
         """
